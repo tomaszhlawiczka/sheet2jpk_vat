@@ -42,9 +42,21 @@ ln -s /usr/lib64/python3.6/site-packages/PySide/ ~/.virtualenvs/jpk_vat/lib/pyth
 sheet2jpk_vat --path ~/katalog_z_arkuszami --nip 0000000000 --name "Pełna nazwa firmy" --email "ksiegowa@example.com"
 ```
 
-1. Skrypt w pierwszym kroku poprosi o wybranie pliku z podanego katalogu
+1. Skrypt w pierwszym kroku poprosi o wybranie pliku z podanego katalogu:
+
+![Krok1](doc/Step1.png)
+
 2. Następnie poprosi o wybranie arkusza z podanego pliku
+
+![Krok2](doc/Step2.png)
+
 3. W kolejnym kroku trzeba wybrać okres czasu z którego będzie generowany raport.
+
+![Krok3](doc/Step3.png)
+
 Dostępne okresy czasu są wybierane ze wskazanego arkusza.
-4. Po wybraniu okresu są przedstawiane ewentualne problemy z danymi (np. nieprawidłowa data, nieprawidłowy NIP itp) lub odczytane dane do akceptacji
+4. Po wybraniu okresu są przedstawiane ewentualne problemy z danymi (np. nieprawidłowa data, nieprawidłowy NIP itp) lub odczytane dane do akceptacji:
+
+![Krok4](doc/Step4.png)
+
 5. Zostaje wygenerowany plik XML (JPK_VAT) w tym samym katalogu co źródłowy plik `.ods`
