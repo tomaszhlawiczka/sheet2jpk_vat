@@ -1,0 +1,9 @@
+*.pyc
+*.pyo
+*~
+*.kate-swp
+build/
+dist/
+*.swp
+__pycache__
+.eggs
