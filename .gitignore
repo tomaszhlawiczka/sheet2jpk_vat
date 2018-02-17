@@ -7,3 +7,4 @@ dist/
 *.swp
 __pycache__
 .eggs
+*.egg-info/

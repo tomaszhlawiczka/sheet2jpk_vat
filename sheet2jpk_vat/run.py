@@ -13,10 +13,10 @@ from stdnum.pl import nip
 from html import escape
 import xmlwitch
 
-from utils import *
-import ui_pyside as ui
-import src_ods
-import jpk_vat
+from .utils import *
+from . import ui_pyside as ui
+from . import src_ods
+from . import jpk_vat
 
 
 def SelectFile(dir):

@@ -2,7 +2,7 @@
 
 import ezodf
 
-from utils import *
+from .utils import *
 
 
 SupportedMimeTypes = ['application/vnd.oasis.opendocument.spreadsheet']

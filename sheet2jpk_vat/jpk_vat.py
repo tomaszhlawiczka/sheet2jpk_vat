@@ -6,7 +6,7 @@ from stdnum.pl import nip
 from html import escape
 import xmlwitch
 
-from utils import *
+from .utils import *
 
 
 def Write(fo, nip_number, name, email, begin, end, sells, buys, version=0, sysname="LibreOffice+Python3"):

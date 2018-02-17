@@ -42,5 +42,6 @@ setup(
     },
     entry_points={
         'console_scripts': ['sheet2jpk_vat = sheet2jpk_vat:main']
-    }
+    },
+	packages=["sheet2jpk_vat"]
 )
