@@ -95,10 +95,47 @@ def Write(fo, nip_number, name, email, begin, end, sells, buys, version=0, sysna
 					xml.tns__DataWystawienia(i.info.invoice_date.isoformat())
 					xml.tns__DataSprzedazy(i.info.ship_date.isoformat())
 
-					# TODO: rozróżnienie na różne stawki podaktu, np. 5%, 12% itd, nie tylko 23%
-					
+					"""
+						K_10 Kwota netto – Dostawa towarów oraz świadczenie usług na terytorium kraju, zwolnione od podatku (pole opcjonalne)
+						K_11 Kwota netto – Dostawa towarów oraz świadczenie usług poza terytorium kraju (pole opcjonalne)
+						K_12 Kwota netto – w tym świadczenie usług, o których mowa w art. 100 ust. 1 pkt 4 ustawy (pole opcjonalne)
+						✓ K_13 Kwota netto – Dostawa towarów oraz świadczenie usług na terytorium kraju, opodatkowane stawką 0% (pole opcjonalne)
+						✓ K_14 Kwota netto – w tym dostawa towarów, o której mowa w art. 129 ustawy (pole opcjonalne)
+						✓ K_15 Kwota netto – Dostawa towarów oraz świadczenie usług na terytorium kraju, opodatkowane stawką 5% (pole opcjonalne)
+						✓ K_16 Kwota podatku należnego – Dostawa towarów oraz świadczenie usług na terytorium kraju, opodatkowane stawką 5% (pole opcjonalne)
+						✓ K_17 Kwota netto – Dostawa towarów oraz świadczenie usług na terytorium kraju, opodatkowane stawką 7% albo 8% (pole opcjonalne)
+						✓ K_18 Kwota podatku należnego – Dostawa towarów oraz świadczenie usług na terytorium kraju, opodatkowane stawką 7% albo 8% (pole opcjonalne)
+						✓ K_19 Kwota netto – Dostawa towarów oraz świadczenie usług na terytorium kraju, opodatkowane stawką 22% albo 23% (pole opcjonalne)
+						✓ K_20 Kwota podatku należnego – Dostawa towarów oraz świadczenie usług na terytorium kraju, opodatkowane stawką 22% albo 23% (pole opcjonalne)
+						K_21 Kwota netto – Wewnątrzwspólnotowa dostawa towarów (pole opcjonalne)
+						K_22 Kwota netto – Eksport towarów (pole opcjonalne)
+						K_23 Kwota netto – Wewnątrzwspólnotowe nabycie towarów (pole opcjonalne)
+						K_24 Kwota podatku należnego – Wewnątrzwspólnotowe nabycie towarów (pole opcjonalne)
+						K_25 Kwota netto – Import towarów podlegający rozliczeniu zgodnie z art. 33a ustawy (pole opcjonalne)
+						K_26 Kwota podatku należnego – Import towarów podlegający rozliczeniu zgodnie z art. 33a ustawy (pole opcjonalne)
+						K_27 Kwota netto – Import usług z wyłączeniem usług nabywanych od podatników podatku od wartości dodanej, do których stosuje się art. 28b ustawy (pole opcjonalne)
+						K_28 Kwota podatku należnego – Import usług z wyłączeniem usług nabywanych od podatników podatku od wartości dodanej, do których stosuje się art. 28b ustawy (pole opcjonalne)
+						K_29 Kwota netto – Import usług nabywanych od podatników podatku od wartości dodanej, do których stosuje się art. 28b ustawy (pole opcjonalne)
+						K_30 Kwota podatku należnego – Import usług nabywanych od podatników podatku od wartości dodanej, do których stosuje się art. 28b ustawy (pole opcjonalne)
+						K_31 Kwota netto – Dostawa towarów oraz świadczenie usług, dla których podatnikiem jest nabywca zgodnie z art. 17 ust. 1 pkt 7 lub 8 ustawy (wypełnia dostawca) (pole opcjonalne)
+						K_32 Kwota netto – Dostawa towarów, dla których podatnikiem jest nabywca zgodnie z art. 17 ust. 1 pkt 5 ustawy (wypełnia nabywca) (pole opcjonalne)
+						K_33 Kwota podatku należnego – Dostawa towarów, dla których podatnikiem jest nabywca zgodnie z art. 17 ust. 1 pkt 5 ustawy (wypełnia nabywca) (pole opcjonalne)
+						K_34 Kwota netto – Dostawa towarów oraz świadczenie usług, dla których podatnikiem jest nabywca zgodnie z art. 17 ust. 1 pkt 7 lub 8 ustawy (wypełnia nabywca) (pole opcjonalne) 
+						K_35 Kwota podatku należnego – Dostawa towarów oraz świadczenie usług, dla których podatnikiem jest nabywca zgodnie z art. 17 ust. 1 pkt 7 lub 8 ustawy (wypełnia nabywca) (pole opcjonalne)
+						K_36 Kwota podatku należnego od towarów i usług objętych spisem z natury, o którym mowa w art. 14 ust. 5 ustawy (pole opcjonalne)
+						K_37 Zwrot odliczonej lub zwróconej kwoty wydatkowanej na zakup kas rejestrujących, o którym mowa w art. 111 ust. 6 ustawy (pole opcjonalne)
+						K_38 Kwota podatku należnego od wewnątrzwspólnotowego nabycia środków transportu, wykazanego w poz. 24, podlegająca wpłacie w terminie, o którym mowa w art. 103 ust. 3, w związku z ust. 4 ustawy (pole opcjonalne)
+						K_39 Kwota podatku od wewnątrzwspólnotowego nabycia paliw silnikowych, podlegająca wpłacie w terminach, o których mowa w art. 103 ust. 5a i 5b ustawy (pole opcjonalne)
+					"""
+
 					for net_value, tax_percent, tax_value in i.GroupByTaxPercents():
-						if tax_percent == '8,00%':
+						if tax_percent == '0,00%':
+							xml.tns__K_13(Dec2Str(net_value))
+							xml.tns__K_14(Dec2Str(tax_value))
+						elif tax_percent == '5,00%':
+							xml.tns__K_15(Dec2Str(net_value))
+							xml.tns__K_16(Dec2Str(tax_value))
+						elif tax_percent == '8,00%':
 							xml.tns__K_17(Dec2Str(net_value))
 							xml.tns__K_18(Dec2Str(tax_value))
 						elif tax_percent == '23,00%':
@@ -124,12 +161,24 @@ def Write(fo, nip_number, name, email, begin, end, sells, buys, version=0, sysna
 					xml.tns__DowodZakupu(i.info.invoice_number)
 					xml.tns__DataZakupu(i.info.invoice_date.isoformat())
 					xml.tns__DataWplywu(i.info.ship_date.isoformat())
-					
-					for net_value, tax_percent, tax_value in i.GroupByTaxPercents():
-						xml.tns__K_45(Dec2Str(net_value))
-						xml.tns__K_46(Dec2Str(tax_value))
 
-						sum += tax_value
+					"""
+						K_43 Kwota netto – Nabycie towarów i usług zaliczanych u podatnika do środków trwałych (pole opcjonalne)
+						K_44 Kwota podatku naliczonego – Nabycie towarów i usług zaliczanych u podatnika do środków trwałych (pole opcjonalne)
+						✓ K_45 Kwota netto – Nabycie towarów i usług pozostałych (pole opcjonalne)
+						✓ K_46 Kwota podatku naliczonego – Nabycie towarów i usług pozostałych (pole opcjonalne)
+						K_47 Korekta podatku naliczonego od nabycia środków trwałych (pole opcjonalne)
+						K_48 Korekta podatku naliczonego od pozostałych nabyć (pole opcjonalne)
+						K_49 Korekta podatku naliczonego, o której mowa w art. 89b ust. 1 ustawy (pole opcjonalne)
+						K_50 Korekta podatku naliczonego, o której mowa w art. 89b ust. 4 ustawy (pole opcjonalne)
+					"""
+
+					net_value, tax_value = i.SumValues()
+
+					xml.tns__K_45(Dec2Str(net_value))
+					xml.tns__K_46(Dec2Str(tax_value))
+
+					sum += tax_value
 
 			with xml.tns__ZakupCtrl():
 				xml.tns__LiczbaWierszyZakupow(str(len(buys)))

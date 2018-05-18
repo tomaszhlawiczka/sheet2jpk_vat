@@ -173,10 +173,10 @@ def Main(argv=None):
 		ValidateTable(begin, end, buys)
 
 		if ConfirmData(begin, end, sells, buys):
-			
+
 			output = args.output or os.getcwd()
 
-			filename = "{}/JPK_VAT_{}-{:02d}.xml".format(output, begin.year, begin.month)
+			filename = os.path.join(output, "JPK_VAT_{}-{:02d}.xml".format(begin.year, begin.month))
 
 			if os.path.exists(filename):
 				if not ui.MsgBoxYesNo("Uwaga!", "Plik {} już istnieje.\nCzy go nadpisać nowymi danymi?".format(filename)):

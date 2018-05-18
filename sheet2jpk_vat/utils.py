@@ -75,6 +75,15 @@ class Invoice:
 	def SumTaxValues(self):
 		return sum(i.tax_value for i in self.items)
 
+	def SumValues(self):
+		net_value = Decimal(0.00)
+		tax_value = Decimal(0.00)
+		for i in self.items:
+			net_value += i.net_value
+			tax_value += i.tax_value
+
+		return net_value, tax_value
+
 
 	def GroupByTaxPercents(self):
 
