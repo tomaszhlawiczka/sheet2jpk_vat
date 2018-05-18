@@ -79,42 +79,59 @@ def ConfirmData(begin, end, sells, buys):
 
 	content = []
 
-	content.append('<b>Sprzedaż:</b><br/>')
-	content.append('<table class="invoices" width="100%">')
-	for i in sells:
-		errors = []
-		d = ExtractDate(i['Data Sprzedaży'])
+	if sells:
+		content.append('<b>Sprzedaż:</b><br/>')
+		content.append('<table class="invoices" width="100%">')
 
-		content.append('<tr>')
+		sum_net = Decimal(0.00)
+		sum_vat = Decimal(0.00)
 
-		content.append('<td>{}</td>'.format(escape(i['LP'])))
-		content.append('<td>{}</td>'.format(escape(str(d))))
-		content.append('<td>{}<br/><small>{}</small><br/><small>{}</small></td>'.format(escape(i['Nazwa Kontrahenta'] or ''), escape(i['Adres Kontrahenta'] or ''), escape(nip.format(i['NIP']))))
-		content.append('<td class="currency">{:.02f} zł</td>'.format(i['Netto']))
-		content.append('<td class="currency">{:.02f} zł</td>'.format(i['Kwota VAT']))
+		for i in sells:
+			content.append('<tr>')
 
-		content.append('</tr>')
+			content.append('<td>{}</td>'.format(", ".join(map(escape, map(str, i.invoice_pos)))))
+			content.append('<td>{}</td>'.format(escape(str(i.info.invoice_date))))
+			content.append('<td>{}<br/><small>{}</small><br/><small>{}</small></td>'.format(escape(i.info.merchant_name or ''), escape(i.info.merchant_adr or ''), escape(nip.format(i.info.merchant_nip))))
+			content.append('<td class="currency">{:.02f} zł</td>'.format(i.SumNetValues()))
+			content.append('<td class="currency">{:.02f} zł</td>'.format(i.SumTaxValues()))
 
-	content.append('</table><br/>')
+			content.append('</tr>')
 
-	content.append('<b>Zakupy:</b><br/>')
-	content.append('<table class="invoices" width="100%">')
-	for i in buys:
-		errors = []
-		w = ExtractDate(i['Data Wystawienia'])
-		d = ExtractDate(i['Data Sprzedaży'])
+			sum_net += i.SumNetValues()
+			sum_vat += i.SumTaxValues()
 
-		content.append('<tr>')
 
-		content.append('<td>{}</td>'.format(escape(i['LP'])))
-		content.append('<td>{}</td>'.format(escape(str(d)), escape(str(d))))
-		content.append('<td>{}<br/><small>{}</small><br/><small>{}</small></td>'.format(escape(i['Nazwa Kontrahenta'] or ''), escape(i['Adres Kontrahenta'] or ''), escape(nip.format(i['NIP']))))
-		content.append('<td class="currency">{:.02f} zł</td>'.format(i['Netto']))
-		content.append('<td class="currency">{:.02f} zł</td>'.format(i['Kwota VAT']))
+		content.append('</table><br/>')
 
-		content.append('</tr>')
+		content.append('Suma netto: <b>{}</b><br/>'.format(Dec2Str(sum_net)))
+		content.append('Suma VAT: <b>{}</b><br/>'.format(Dec2Str(sum_vat)))
 
-	content.append('</table>')
+	if buys:
+		content.append('<b>Zakupy:</b><br/>')
+		content.append('<table class="invoices" width="100%">')
+
+		sum_net = Decimal(0.00)
+		sum_vat = Decimal(0.00)
+		
+		for i in buys:
+			content.append('<tr>')
+
+			content.append('<td>{}</td>'.format(", ".join(map(escape, map(str, i.invoice_pos)))))
+			content.append('<td>{}</td>'.format(escape(str(i.info.invoice_date))))
+			content.append('<td>{}<br/><small>{}</small><br/><small>{}</small></td>'.format(escape(i.info.merchant_name or ''), escape(i.info.merchant_adr or ''), escape(nip.format(i.info.merchant_nip))))
+			content.append('<td class="currency">{:.02f} zł</td>'.format(i.SumNetValues()))
+			content.append('<td class="currency">{:.02f} zł</td>'.format(i.SumTaxValues()))
+
+			content.append('</tr>')
+
+			sum_net += i.SumNetValues()
+			sum_vat += i.SumTaxValues()
+
+		content.append('</table>')
+
+		content.append('Suma netto: <b>{}</b><br/>'.format(Dec2Str(sum_net)))
+		content.append('Suma VAT: <b>{}</b><br/>'.format(Dec2Str(sum_vat)))
+
 
 	dlg = ui.ReportDialog("".join(content), allow_cancel=True, msg="Potwierdz poprawność odczytanych danych")
 	return dlg.run() is True
@@ -127,6 +144,7 @@ def Main(argv=None):
 		cmdline.add_argument("--nip", default="", help="NIP firmy składającej raport JPK_VAT")
 		cmdline.add_argument("--name", default="", help="Pełna nazwa firmy składającej raport JPK_VAT")
 		cmdline.add_argument("--email", default="", help="Adres email osoby składającej raport")
+		cmdline.add_argument("--output", default="", help="Katalog na zrzut raportów JPK_VAT")
 		args = cmdline.parse_args(argv)
 
 		if not args.nip:
@@ -155,7 +173,10 @@ def Main(argv=None):
 		ValidateTable(begin, end, buys)
 
 		if ConfirmData(begin, end, sells, buys):
-			filename = "{}_{}-{}.xml".format(os.path.splitext(filepath)[0], begin.isoformat(), end.isoformat())
+			
+			output = args.output or os.getcwd()
+
+			filename = "{}/JPK_VAT_{}-{:02d}.xml".format(output, begin.year, begin.month)
 
 			if os.path.exists(filename):
 				if not ui.MsgBoxYesNo("Uwaga!", "Plik {} już istnieje.\nCzy go nadpisać nowymi danymi?".format(filename)):
@@ -165,10 +186,11 @@ def Main(argv=None):
 				# TODO: dodać opcję wyboru złożenia dokumentu lub korekty - version
 				jpk_vat.Write(xml, args.nip, args.name, args.email, begin, end, sells, buys, version=0)
 
-		ui.MsgBoxInfo("Sukces!", "Utworzyony plik to:\n{}".format(os.path.abspath(filename)))
+			ui.MsgBoxInfo("Sukces!", "Utworzyony plik to:\n{}".format(os.path.abspath(filename)))
 		return 0
 
 	except ValueError as ex:
+		raise
 		print("Program napotkał błąd: {}".format(ex))
 		ui.MsgBoxCritical("Program napotkał problem", str(ex))
 		return 2

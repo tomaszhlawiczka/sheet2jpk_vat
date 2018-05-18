@@ -49,25 +49,36 @@ def ReadData(sheet):
 				current_period = values[0]
 				periods[current_period] = []
 			else:
-				values = [cell for cell in sheet.row(i)]
+				values = list(sheet.row(i))
 
-				item = {
-					'LP': values[descr['LP']].value,
-					'Data Sprzedaży': values[descr['Data Sprzedaży']].value,
-					'NIP': values[descr['NIP']].plaintext(),
-					'Nr Faktury': values[descr['Nr Faktury']].plaintext(),
-					'Netto': values[descr['Netto']].value,
-					'Kwota VAT': values[descr['Kwota VAT']].value
-				}
-				if sum(1 if v is None else 0 for v in item.values()) == 0:
-					item.update({
-						'Data Wystawienia': values[descr['Data Wystawienia']].value,
-						'Nazwa Kontrahenta': values[descr['Nazwa Kontrahenta']].value,
-						'Adres Kontrahenta': values[descr['Adres Kontrahenta']].value,
-						'Netto': ExtractCurrency(values[descr['Netto']]),
-						'Kwota VAT': ExtractCurrency(values[descr['Kwota VAT']])
-					})
-					periods[current_period].append(item)
+				try:
+
+					new_invoice = Invoice(
+						invoice_pos = values[descr['LP']].value,
+						invoice_number = values[descr['Nr Faktury']].plaintext(),
+						invoice_date = ExtractDate(values[descr['Data Wystawienia']].value),
+
+						ship_date = ExtractDate(values[descr['Data Sprzedaży']].value),
+
+						tax_percent = values[descr['Stawka VAT']].plaintext(),
+						tax_value = ExtractCurrency(values[descr['Kwota VAT']]),
+						net_value = ExtractCurrency(values[descr['Netto']]),
+
+						merchant_nip = values[descr['NIP']].plaintext(),
+						merchant_name = values[descr['Nazwa Kontrahenta']].value,
+						merchant_adr = values[descr['Adres Kontrahenta']].value,
+					)
+
+					for invoice in periods[current_period]:
+						if invoice.info == new_invoice.info:
+							invoice.Merge(new_invoice)
+							break
+					else:
+						periods[current_period].append(new_invoice)
+
+				except (ValueError, TypeError) as ex:
+					pass
+
 		else:
 			for cell in sheet.row(i):
 

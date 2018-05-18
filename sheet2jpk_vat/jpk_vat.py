@@ -83,49 +83,57 @@ def Write(fo, nip_number, name, email, begin, end, sells, buys, version=0, sysna
 			if email:
 				xml.tns__Email(email)
 
-		sum = Decimal(0.00)
-		for idx, i in enumerate(sells, 1):
-			with xml.tns__SprzedazWiersz():
-				xml.tns__LpSprzedazy(str(idx))
-				xml.tns__NrKontrahenta(nip.compact(i['NIP']))
-				xml.tns__NazwaKontrahenta(i['Nazwa Kontrahenta'])
-				xml.tns__AdresKontrahenta(i['Adres Kontrahenta'])
-				xml.tns__DowodSprzedazy(i['Nr Faktury'])
-				if i['Data Wystawienia']:
-					xml.tns__DataWystawienia(ExtractDate(i['Data Wystawienia']).isoformat())
-				if i['Data Sprzedaży']:
-					xml.tns__DataSprzedazy(ExtractDate(i['Data Sprzedaży']).isoformat())
+		if sells:
+			sum = Decimal(0.00)
+			for idx, i in enumerate(sells, 1):
+				with xml.tns__SprzedazWiersz():
+					xml.tns__LpSprzedazy(str(idx))
+					xml.tns__NrKontrahenta(nip.compact(i.info.merchant_nip))
+					xml.tns__NazwaKontrahenta(i.info.merchant_name)
+					xml.tns__AdresKontrahenta(i.info.merchant_adr)
+					xml.tns__DowodSprzedazy(i.info.invoice_number)
+					xml.tns__DataWystawienia(i.info.invoice_date.isoformat())
+					xml.tns__DataSprzedazy(i.info.ship_date.isoformat())
 
-				# TODO: rozróżnienie na różne stawki podaktu, np. 5%, 12% itd, nie tylko 23%
-				xml.tns__K_19(Dec2Str(i['Netto']))
-				xml.tns__K_20(Dec2Str(i['Kwota VAT']))
+					# TODO: rozróżnienie na różne stawki podaktu, np. 5%, 12% itd, nie tylko 23%
+					
+					for net_value, tax_percent, tax_value in i.GroupByTaxPercents():
+						if tax_percent == '8,00%':
+							xml.tns__K_17(Dec2Str(net_value))
+							xml.tns__K_18(Dec2Str(tax_value))
+						elif tax_percent == '23,00%':
+							xml.tns__K_19(Dec2Str(net_value))
+							xml.tns__K_20(Dec2Str(tax_value))
+						else:
+							raise ValueError('Unknown tax: "{}"'.format(tax_percent))
 
-			sum += i['Kwota VAT']
+						sum += tax_value
 
-		with xml.tns__SprzedazCtrl():
-			xml.tns__LiczbaWierszySprzedazy(str(len(sells)))
-			xml.tns__PodatekNalezny(Dec2Str(sum))
+			with xml.tns__SprzedazCtrl():
+				xml.tns__LiczbaWierszySprzedazy(str(len(sells)))
+				xml.tns__PodatekNalezny(Dec2Str(sum))
 
-		sum = Decimal(0.00)
-		for idx, i in enumerate(buys, 1):
-			with xml.tns__ZakupWiersz():
-				xml.tns__LpZakupu(str(idx))
-				xml.tns__NrDostawcy(nip.compact(i['NIP']))
-				xml.tns__NazwaDostawcy(i['Nazwa Kontrahenta'])
-				xml.tns__AdresDostawcy(i['Adres Kontrahenta'])
-				xml.tns__DowodZakupu(i['Nr Faktury'])
-				if i['Data Wystawienia']:
-					xml.tns__DataZakupu(ExtractDate(i['Data Wystawienia']).isoformat())
-				if i['Data Sprzedaży']:
-					xml.tns__DataWplywu(ExtractDate(i['Data Sprzedaży']).isoformat())
-				xml.tns__K_45(Dec2Str(i['Netto']))
-				xml.tns__K_46(Dec2Str(i['Kwota VAT']))
+		if buys:
+			sum = Decimal(0.00)
+			for idx, i in enumerate(buys, 1):
+				with xml.tns__ZakupWiersz():
+					xml.tns__LpZakupu(str(idx))
+					xml.tns__NrDostawcy(nip.compact(i.info.merchant_nip))
+					xml.tns__NazwaDostawcy(i.info.merchant_name)
+					xml.tns__AdresDostawcy(i.info.merchant_adr)
+					xml.tns__DowodZakupu(i.info.invoice_number)
+					xml.tns__DataZakupu(i.info.invoice_date.isoformat())
+					xml.tns__DataWplywu(i.info.ship_date.isoformat())
+					
+					for net_value, tax_percent, tax_value in i.GroupByTaxPercents():
+						xml.tns__K_45(Dec2Str(net_value))
+						xml.tns__K_46(Dec2Str(tax_value))
 
-			sum += i['Kwota VAT']
+						sum += tax_value
 
-		with xml.tns__ZakupCtrl():
-			xml.tns__LiczbaWierszyZakupow(str(len(buys)))
-			xml.tns__PodatekNaliczony(Dec2Str(sum))
+			with xml.tns__ZakupCtrl():
+				xml.tns__LiczbaWierszyZakupow(str(len(buys)))
+				xml.tns__PodatekNaliczony(Dec2Str(sum))
 
 	fo.write(str(xml))
 
@@ -136,21 +144,21 @@ def Validate(begin, end, items):
 
 	for i in items:
 		errors = []
-		d = ExtractDate(i['Data Sprzedaży'])
+		d = i.info.invoice_date
 		if d < begin or d > end:
 			errors.append("Data <b>{}</b> wykracza poza okres raportu: <b>{}</b> - <b>{}</b>".format(escape(str(d)), escape(str(begin)), escape(str(end))))
 
-		if not nip.is_valid(i['NIP']):
-			errors.append("NIP <b>{}</b> jest nieprawidłowy".format(escape(i['NIP'])))
+		if not nip.is_valid(i.info.merchant_nip):
+			errors.append("NIP <b>{}</b> jest nieprawidłowy".format(escape(i.info.merchant_nip)))
 		else:
-			i['NIP'] = nip.compact(i['NIP'])
+			imerchant_nip = nip.compact(i.info.merchant_nip)
 
 		if errors:
-			content.append("Pozycja <b>{}</b> <small>({})</small>".format(escape(i['LP']), escape(i['Nazwa Kontrahenta'])))
+			content.append("Pozycja <b>{}</b> <small>({})</small>".format(escape(i.invoice_pos), escape(i.info.merchant_name)))
 			content.append("""<ul class="errors">""")
 
-			for i in errors:
-				content.append("<li>{}</li>".format(i))
+			for err in errors:
+				content.append("<li>{}</li>".format(err))
 
 			content.append("""</ul>""")
 
