@@ -8,3 +8,4 @@ dist/
 __pycache__
 .eggs
 *.egg-info/
+sheet2jpk_vat.kdev4

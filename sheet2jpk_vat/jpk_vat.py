@@ -203,7 +203,7 @@ def Validate(begin, end, items):
 			imerchant_nip = nip.compact(i.info.merchant_nip)
 
 		if errors:
-			content.append("Pozycja <b>{}</b> <small>({})</small>".format(escape(i.invoice_pos), escape(i.info.merchant_name)))
+			content.append("Pozycja <b>{}</b> <small>({})</small>".format(escape(','.join(i.invoice_pos)), escape(i.info.merchant_name)))
 			content.append("""<ul class="errors">""")
 
 			for err in errors:

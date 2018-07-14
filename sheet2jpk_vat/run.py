@@ -14,7 +14,8 @@ from html import escape
 import xmlwitch
 
 from .utils import *
-from . import ui_pyside as ui
+# from . import ui_pyside as ui
+from . import ui_qt5 as ui
 from . import src_ods
 from . import jpk_vat
 

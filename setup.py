@@ -36,12 +36,10 @@ setup(
     setup_requires=["setuptools_scm"],
     use_scm_version=True,
 
-    install_requires=["ezodf>=0.3.2", "lxml>=4.1.1", "python-stdnum>=1.8.1", "xmlwitch>=0.3"],
-    extras_require={
-        "PySide": ["PySide>=1.2.4"]
-    },
+    install_requires=["ezodf>=0.3.2", "lxml>=4.1.1", "python-stdnum>=1.8.1", "xmlwitch>=0.3", "pyqt5"],
+
     entry_points={
         'console_scripts': ['sheet2jpk_vat = sheet2jpk_vat:main']
     },
-	packages=["sheet2jpk_vat"]
+    packages=["sheet2jpk_vat"]
 )
