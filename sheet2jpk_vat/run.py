@@ -12,6 +12,7 @@ import argparse
 from stdnum.pl import nip
 from html import escape
 import xmlwitch
+from dateutil.relativedelta import relativedelta
 
 from .utils import *
 # from . import ui_pyside as ui
@@ -67,7 +68,8 @@ def SelectPeriod(sells, buys):
 
 def ValidateTable(begin, end, items):
 
-	content = jpk_vat.Validate(begin, end, items)
+        # https://poradnikprzedsiebiorcy.pl/-czy-wiesz-jak-ujac-w-ewidencjach-zapomniana-fakture-kosztowa
+	content = jpk_vat.Validate(begin - relativedelta(months=2), end, items)
 
 	if content:
 		"""Pozycja 1.<br/><b class="error">Coś poszło źle</b>:</br/>"""
