@@ -3,6 +3,8 @@
 import collections
 import datetime
 from decimal import Decimal
+from stdnum.pl import nip
+from stdnum.eu import vat
 
 Dec2Str = '{:.02f}'.format
 
@@ -14,9 +16,18 @@ class InvoiceInfo:
 		self.invoice_date = invoice_date
 		self.ship_date = ship_date
 
-		self.merchant_nip = merchant_nip
 		self.merchant_name = merchant_name
 		self.merchant_adr = merchant_adr
+
+		if nip.is_valid(merchant_nip):
+			self.merchant_nip = nip.compact(merchant_nip)
+			self.is_eu_vat = False
+		elif vat.is_valid(merchant_nip):
+			self.merchant_nip = vat.compact(merchant_nip)
+			self.is_eu_vat = True
+		else:
+			self.merchant_nip = merchant_nip
+			self.is_eu_vat = None
 
 	def __eq__(self, other):
 
@@ -37,7 +48,7 @@ class InvoiceInfo:
 
 class InvoiceItem:
 
-	def __init__(self, net_value, tax_percent, tax_value):
+	def __init__(self, net_value, tax_percent, tax_value, is_eu_vat):
 
 		if not tax_percent:
 			raise ValueError("tax_percent cannot be empty")
@@ -51,6 +62,7 @@ class InvoiceItem:
 		self.tax_percent = tax_percent
 		self.tax_value = tax_value
 		self.net_value = net_value
+		self.is_eu_vat = is_eu_vat
 
 
 class Invoice:
@@ -61,7 +73,7 @@ class Invoice:
 
 		self.info = InvoiceInfo(invoice_number, invoice_date, ship_date, merchant_nip, merchant_name, merchant_adr)
 
-		self.items = [InvoiceItem(net_value, tax_percent, tax_value)]
+		self.items = [InvoiceItem(net_value, tax_percent, tax_value, self.info.is_eu_vat)]
 
 	def Merge(self, other):
 		self.info.Merge(other.info)
@@ -89,7 +101,10 @@ class Invoice:
 
 		d = collections.defaultdict(list)
 		for i in self.items:
-			d[i.tax_percent].append(i)
+			if i.is_eu_vat:
+				d['EU'].append(i)
+			else:
+				d[i.tax_percent].append(i)
 
 		for tax_percent, items in d.items():
 			yield sum(i.net_value for i in items), tax_percent, sum(i.tax_value for i in items)

@@ -3,6 +3,7 @@
 import datetime
 from decimal import Decimal
 from stdnum.pl import nip
+from stdnum.eu import vat
 from html import escape
 import xmlwitch
 
@@ -131,7 +132,6 @@ def Write(fo, nip_number, name, email, begin, end, sells, buys, version=0, sysna
 					for net_value, tax_percent, tax_value in i.GroupByTaxPercents():
 						if tax_percent == '0,00%':
 							xml.tns__K_13(Dec2Str(net_value))
-							xml.tns__K_14(Dec2Str(tax_value))
 						elif tax_percent == '5,00%':
 							xml.tns__K_15(Dec2Str(net_value))
 							xml.tns__K_16(Dec2Str(tax_value))
@@ -141,6 +141,8 @@ def Write(fo, nip_number, name, email, begin, end, sells, buys, version=0, sysna
 						elif tax_percent == '23,00%':
 							xml.tns__K_19(Dec2Str(net_value))
 							xml.tns__K_20(Dec2Str(tax_value))
+						elif tax_percent == 'EU':
+							xml.tns__K_11(Dec2Str(net_value))
 						else:
 							raise ValueError('Unknown tax: "{}"'.format(tax_percent))
 
@@ -155,7 +157,7 @@ def Write(fo, nip_number, name, email, begin, end, sells, buys, version=0, sysna
 			for idx, i in enumerate(buys, 1):
 				with xml.tns__ZakupWiersz():
 					xml.tns__LpZakupu(str(idx))
-					xml.tns__NrDostawcy(nip.compact(i.info.merchant_nip))
+					xml.tns__NrDostawcy(i.info.merchant_nip)
 					xml.tns__NazwaDostawcy(i.info.merchant_name)
 					xml.tns__AdresDostawcy(i.info.merchant_adr)
 					xml.tns__DowodZakupu(i.info.invoice_number)
@@ -198,7 +200,8 @@ def Validate(begin, end, items):
 			errors.append("Data <b>{}</b> wykracza poza okres raportu: <b>{}</b> - <b>{}</b>".format(escape(str(d)), escape(str(begin)), escape(str(end))))
 
 		if not nip.is_valid(i.info.merchant_nip):
-			errors.append("NIP <b>{}</b> jest nieprawidłowy".format(escape(i.info.merchant_nip)))
+			if not vat.is_valid(i.info.merchant_nip):
+				errors.append("NIP <b>{}</b> jest nieprawidłowy".format(escape(i.info.merchant_nip)))	
 		else:
 			imerchant_nip = nip.compact(i.info.merchant_nip)
 
