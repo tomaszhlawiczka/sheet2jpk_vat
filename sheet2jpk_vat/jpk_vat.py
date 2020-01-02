@@ -143,6 +143,7 @@ def Write(fo, nip_number, name, email, begin, end, sells, buys, version=0, sysna
 							xml.tns__K_20(Dec2Str(tax_value))
 						elif tax_percent == 'EU':
 							xml.tns__K_11(Dec2Str(net_value))
+							xml.tns__K_12(Dec2Str(net_value))
 						else:
 							raise ValueError('Unknown tax: "{}"'.format(tax_percent))
 
