@@ -95,6 +95,7 @@ def ConfirmData(begin, end, sells, buys):
 			content.append('<td>{}</td>'.format(escape(str(i.info.invoice_date))))
 			content.append('<td>{}<br/><small>{}</small><br/><small>{}</small></td>'.format(escape(i.info.merchant_name or ''),
 																							escape(i.info.merchant_adr or ''), escape(nip.format(i.info.merchant_nip))))
+			content.append('<td>{}</td>'.format(escape(' '.join(i.info.codes))))
 			content.append('<td class="currency">{:.02f} zł</td>'.format(i.SumNetValues()))
 			content.append('<td class="currency">{:.02f} zł</td>'.format(i.SumTaxValues()))
 
@@ -122,6 +123,8 @@ def ConfirmData(begin, end, sells, buys):
 			content.append('<td>{}</td>'.format(escape(str(i.info.invoice_date))))
 			content.append('<td>{}<br/><small>{}</small><br/><small>{}</small></td>'.format(escape(i.info.merchant_name or ''),
 																							escape(i.info.merchant_adr or ''), escape(nip.format(i.info.merchant_nip))))
+
+			content.append('<td>{}</td>'.format(escape(' '.join(i.info.codes))))
 			content.append('<td class="currency">{:.02f} zł</td>'.format(i.SumNetValues()))
 			content.append('<td class="currency">{:.02f} zł</td>'.format(i.SumTaxValues()))
 
@@ -212,9 +215,9 @@ def Main(argv=None):
 
 			with open(filename, "w") as xml:
 				# TODO: dodać opcję wyboru złożenia dokumentu lub korekty - version
-				jpk_vat.Write(xml, args.nip, args.firstname, args.lastname, args.birth, args.email, args.type == "VAT7K", args.departmentcode, begin, end, sells, buys, version=0)
+				tax = jpk_vat.Write(xml, args.nip, args.firstname, args.lastname, args.birth, args.email, args.type == "VAT7K", args.departmentcode, begin, end, sells, buys, version=0)
 
-			ui.MsgBoxInfo("Sukces!", "Utworzyony plik to:\n{}".format(os.path.abspath(filename)))
+			ui.MsgBoxInfo("Sukces!", "Podatek do zapłacenia {}zł\n Utworzyony plik to:\n{}".format(tax, os.path.abspath(filename)))
 		return 0
 
 	except ValueError as ex:

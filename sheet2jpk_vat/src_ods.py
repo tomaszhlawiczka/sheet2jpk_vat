@@ -56,7 +56,7 @@ def ReadData(sheet):
 						invoice_pos = values[descr['LP']].value,
 						invoice_number = values[descr['Nr Faktury']].plaintext(),
 						country = values[descr['Kraj']].plaintext(),
-						codes = [ i.strip().upper() for i in values[descr['Kody']].plaintext().split(',')],
+						codes = [ i.strip().upper() for i in values[descr['Kody']].plaintext().split(' ')],
 
 						invoice_date = ExtractDate(values[descr['Data Wystawienia']].value),
 

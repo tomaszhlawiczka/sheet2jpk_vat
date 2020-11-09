@@ -153,7 +153,7 @@ def Write(fo, nip_number, firsname, lastname, birth, email, is_quarterly, depart
 						value_P_43 += tax_value
 
 				value_P_48 = value_P_43
-				value_P_51 = value_P_43 - value_P_48
+				value_P_51 = value_P_38 - value_P_48
 				if value_P_51 < 0:
 					value_P_62 = value_P_51 * (-1)
 					value_P_51 = Decimal(0)
@@ -345,6 +345,7 @@ def Write(fo, nip_number, firsname, lastname, birth, email, is_quarterly, depart
 
 	fo.write(str(xml))
 
+	return Dec2Vat(value_P_51)
 
 def Validate(begin, end, items):
 
