@@ -45,7 +45,6 @@ def SelectSheet(ods):
 
 def SelectPeriod(sells, buys):
 	periods = collections.defaultdict(int)
-
 	for priod, items in itertools.chain(sells.items(), buys.items()):
 		periods[priod] += len(items)
 
@@ -68,7 +67,7 @@ def SelectPeriod(sells, buys):
 
 def ValidateTable(begin, end, items):
 
-        # https://poradnikprzedsiebiorcy.pl/-czy-wiesz-jak-ujac-w-ewidencjach-zapomniana-fakture-kosztowa
+	# https://poradnikprzedsiebiorcy.pl/-czy-wiesz-jak-ujac-w-ewidencjach-zapomniana-fakture-kosztowa
 	content = jpk_vat.Validate(begin - relativedelta(months=2), end, items)
 
 	if content:
@@ -94,7 +93,9 @@ def ConfirmData(begin, end, sells, buys):
 
 			content.append('<td>{}</td>'.format(", ".join(map(escape, map(str, i.invoice_pos)))))
 			content.append('<td>{}</td>'.format(escape(str(i.info.invoice_date))))
-			content.append('<td>{}<br/><small>{}</small><br/><small>{}</small></td>'.format(escape(i.info.merchant_name or ''), escape(i.info.merchant_adr or ''), escape(nip.format(i.info.merchant_nip))))
+			content.append('<td>{}<br/><small>{}</small><br/><small>{}</small></td>'.format(escape(i.info.merchant_name or ''),
+																							escape(i.info.merchant_adr or ''), escape(nip.format(i.info.merchant_nip))))
+			content.append('<td>{}</td>'.format(escape(' '.join(i.info.codes))))
 			content.append('<td class="currency">{:.02f} zł</td>'.format(i.SumNetValues()))
 			content.append('<td class="currency">{:.02f} zł</td>'.format(i.SumTaxValues()))
 
@@ -102,7 +103,6 @@ def ConfirmData(begin, end, sells, buys):
 
 			sum_net += i.SumNetValues()
 			sum_vat += i.SumTaxValues()
-
 
 		content.append('</table><br/>')
 
@@ -115,13 +115,16 @@ def ConfirmData(begin, end, sells, buys):
 
 		sum_net = Decimal(0.00)
 		sum_vat = Decimal(0.00)
-		
+
 		for i in buys:
 			content.append('<tr>')
 
 			content.append('<td>{}</td>'.format(", ".join(map(escape, map(str, i.invoice_pos)))))
 			content.append('<td>{}</td>'.format(escape(str(i.info.invoice_date))))
-			content.append('<td>{}<br/><small>{}</small><br/><small>{}</small></td>'.format(escape(i.info.merchant_name or ''), escape(i.info.merchant_adr or ''), escape(nip.format(i.info.merchant_nip))))
+			content.append('<td>{}<br/><small>{}</small><br/><small>{}</small></td>'.format(escape(i.info.merchant_name or ''),
+																							escape(i.info.merchant_adr or ''), escape(nip.format(i.info.merchant_nip))))
+
+			content.append('<td>{}</td>'.format(escape(' '.join(i.info.codes))))
 			content.append('<td class="currency">{:.02f} zł</td>'.format(i.SumNetValues()))
 			content.append('<td class="currency">{:.02f} zł</td>'.format(i.SumTaxValues()))
 
@@ -145,8 +148,12 @@ def Main(argv=None):
 		cmdline = argparse.ArgumentParser()
 		cmdline.add_argument("--path", default="", help="Katalog z plikami ods")
 		cmdline.add_argument("--nip", default="", help="NIP firmy składającej raport JPK_VAT")
-		cmdline.add_argument("--name", default="", help="Pełna nazwa firmy składającej raport JPK_VAT")
+		cmdline.add_argument("--firstname", default="", help="Imię osoby fizycznej")
+		cmdline.add_argument("--lastname", default="", help="Nazwisko osoby fizycznej.")
+		cmdline.add_argument("--birth", default="", help="Data urodzenia osoby fizycznej np. 1999-01-30")
 		cmdline.add_argument("--email", default="", help="Adres email osoby składającej raport")
+		cmdline.add_argument("--type", default="", help="Typ składanej deklaracji VAT7K czy VAT7")
+		cmdline.add_argument("--departmentcode", default="", help="Kod urzędu skarbowego np. 2407")
 		cmdline.add_argument("--output", default="", help="Katalog na zrzut raportów JPK_VAT")
 		args = cmdline.parse_args(argv)
 
@@ -156,8 +163,29 @@ def Main(argv=None):
 		if not nip.is_valid(args.nip):
 			raise ValueError("Podaj poprawny NIP w argumentach programu")
 
-		if not args.name:
-			raise ValueError("Podaj pełną nazwę firmy w argumentach programu")
+		if not args.firstname:
+			raise ValueError("Podaj imię osoby fizycznej")
+
+		if not args.lastname:
+			raise ValueError("Podaj nazwisko osoby fizycznej")
+
+		if not args.birth:
+			raise ValueError("Podaj date urodzienia osoby fizycznej")
+
+		try:
+			datetime.datetime.strptime(args.birth, "%Y-%m-%d")
+		except ValueError:
+			raise ValueError("Błędy format daty urodzenia. Poprawna wartość to np. 1999-01-30")
+
+		if not args.type:
+			raise ValueError("Podaj typ składanej deklaracji")
+
+		if args.type not in ("VAT7K", "VAT7"):
+			raise ValueError("Typ składanej deklaracji musi VAT7K lub VAT7")
+
+		if not args.departmentcode:
+			raise ValueError("Podaj kod urzędu skarbowego")
+
 
 		filepath = SelectFile(args.path or os.getcwd())
 
@@ -187,9 +215,9 @@ def Main(argv=None):
 
 			with open(filename, "w") as xml:
 				# TODO: dodać opcję wyboru złożenia dokumentu lub korekty - version
-				jpk_vat.Write(xml, args.nip, args.name, args.email, begin, end, sells, buys, version=0)
+				tax = jpk_vat.Write(xml, args.nip, args.firstname, args.lastname, args.birth, args.email, args.type == "VAT7K", args.departmentcode, begin, end, sells, buys, version=0)
 
-			ui.MsgBoxInfo("Sukces!", "Utworzyony plik to:\n{}".format(os.path.abspath(filename)))
+			ui.MsgBoxInfo("Sukces!", "Podatek do zapłacenia {}zł\n Utworzyony plik to:\n{}".format(tax, os.path.abspath(filename)))
 		return 0
 
 	except ValueError as ex:

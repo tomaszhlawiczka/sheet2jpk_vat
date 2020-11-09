@@ -7,17 +7,20 @@ from stdnum.pl import nip
 from stdnum.eu import vat
 
 Dec2Str = '{:.02f}'.format
+Dec2Vat = '{:.00f}'.format
 
 
 class InvoiceInfo:
 
-	def __init__(self, invoice_number, invoice_date, ship_date, merchant_nip, merchant_name, merchant_adr):
+	def __init__(self, invoice_number, invoice_date, ship_date, merchant_nip, merchant_name, merchant_adr, country, codes):
 		self.invoice_number = invoice_number
 		self.invoice_date = invoice_date
 		self.ship_date = ship_date
 
 		self.merchant_name = merchant_name
 		self.merchant_adr = merchant_adr
+		self.country = country
+		self.codes = codes
 
 		if nip.is_valid(merchant_nip):
 			self.merchant_nip = nip.compact(merchant_nip)
@@ -67,11 +70,11 @@ class InvoiceItem:
 
 class Invoice:
 
-	def __init__(self, invoice_pos, invoice_number, invoice_date, ship_date, tax_percent, tax_value, net_value, merchant_nip, merchant_name, merchant_adr):
-		
+	def __init__(self, invoice_pos, invoice_number, country, codes, invoice_date, ship_date, tax_percent, tax_value, net_value, merchant_nip, merchant_name, merchant_adr):
+
 		self.invoice_pos = [invoice_pos]
 
-		self.info = InvoiceInfo(invoice_number, invoice_date, ship_date, merchant_nip, merchant_name, merchant_adr)
+		self.info = InvoiceInfo(invoice_number, invoice_date, ship_date, merchant_nip, merchant_name, merchant_adr, country, codes)
 
 		self.items = [InvoiceItem(net_value, tax_percent, tax_value, self.info.is_eu_vat)]
 
@@ -82,7 +85,6 @@ class Invoice:
 
 	def SumNetValues(self):
 		return sum(i.net_value for i in self.items)
-
 
 	def SumTaxValues(self):
 		return sum(i.tax_value for i in self.items)
@@ -95,7 +97,6 @@ class Invoice:
 			tax_value += i.tax_value
 
 		return net_value, tax_value
-
 
 	def GroupByTaxPercents(self):
 
