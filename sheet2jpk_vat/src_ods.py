@@ -40,7 +40,7 @@ def ReadData(sheet):
 				periods = buys_periods
 
 			if descr is None:
-				# LP	Data Sprzedaży	Data Wystawienia	Nazwa Kontrahenta	Adres Kontrahenta	NIP	Nr Faktury	Netto
+				# LP	Data Sprzedaży	Data Wystawienia	Nazwa Kontrahenta	Adres Kontrahenta	NIP	Nr Faktury Kraj	Kody Netto
 				descr = {cell.value: idx for idx, cell in enumerate(sheet.row(i)) if cell.value}
 				continue
 
@@ -52,10 +52,12 @@ def ReadData(sheet):
 				values = list(sheet.row(i))
 
 				try:
-
 					new_invoice = Invoice(
 						invoice_pos = values[descr['LP']].value,
 						invoice_number = values[descr['Nr Faktury']].plaintext(),
+						country = values[descr['Kraj']].plaintext(),
+						codes = [ i.strip().upper() for i in values[descr['Kody']].plaintext().split(',')],
+
 						invoice_date = ExtractDate(values[descr['Data Wystawienia']].value),
 
 						ship_date = ExtractDate(values[descr['Data Sprzedaży']].value),
