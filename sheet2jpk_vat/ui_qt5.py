@@ -47,6 +47,13 @@ def MsgBoxYesNo(title, msg):
 	return msgbox.clickedButton() == btn_yes
 
 
+def MsgBoxNumber(title, msg):
+	value, status = QtGui.QInputDialog.getInt(None, title, msg)
+	if status is False:
+		raise Cancelled()
+	return value
+
+
 class ReportDialog(QtGui.QDialog):
 
 	def __init__(self, html, allow_cancel=False, msg="Wiersze błędne:"):

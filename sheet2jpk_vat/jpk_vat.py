@@ -10,7 +10,7 @@ import xmlwitch
 from .utils import *
 
 
-def Write(fo, nip_number, firsname, lastname, birth, email, is_quarterly, departmentcode, begin, end, sells, buys, version=0, sysname="LibreOffice+Python3"):
+def Write(fo, nip_number, firsname, lastname, birth, email, is_quarterly, departmentcode, begin, end, sells, buys, surplus, version=0, sysname="LibreOffice+Python3"):
 	"""
 	<?xml version="1.0" encoding="UTF-8"?>
 	<tns:JPK xmlns:etd="http://crd.gov.pl/xml/schematy/dziedzinowe/mf/2016/01/25/eD/DefinicjeTypy/" xmlns:tns="http://jpk.mf.gov.pl/wzor/2017/11/13/1113/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
@@ -152,7 +152,7 @@ def Write(fo, nip_number, firsname, lastname, birth, email, is_quarterly, depart
 						value_P_42 += net_value
 						value_P_43 += tax_value
 
-				value_P_48 = value_P_43
+				value_P_48 = value_P_43 + surplus
 				value_P_51 = value_P_38 - value_P_48
 				if value_P_51 < 0:
 					value_P_62 = value_P_51 * (-1)
@@ -169,12 +169,14 @@ def Write(fo, nip_number, firsname, lastname, birth, email, is_quarterly, depart
 				xml.tns__P_20(Dec2Vat(value_P_20))
 				xml.tns__P_37(Dec2Vat(value_P_37))
 				xml.tns__P_38(Dec2Vat(value_P_38))
+				if surplus:
+					xml.tns__P_39(Dec2Vat(surplus))
 				xml.tns__P_42(Dec2Vat(value_P_42))
 				xml.tns__P_43(Dec2Vat(value_P_43))
 				xml.tns__P_48(Dec2Vat(value_P_48))
 				xml.tns__P_51(Dec2Vat(value_P_51))
 				if value_P_62 > 0:
-					xml.tns__P_61(Dec2Vat(value_P_62))
+					xml.tns__P_62(Dec2Vat(value_P_62))
 
 			xml.tns__Pouczenia("1")
 		with xml.tns__Ewidencja():
@@ -345,7 +347,7 @@ def Write(fo, nip_number, firsname, lastname, birth, email, is_quarterly, depart
 
 	fo.write(str(xml))
 
-	return Dec2Vat(value_P_51)
+	return Dec2Vat(value_P_51), Dec2Vat(value_P_62)
 
 def Validate(begin, end, items):
 

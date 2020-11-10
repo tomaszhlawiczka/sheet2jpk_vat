@@ -43,6 +43,11 @@ def SelectSheet(ods):
 	return [i for i in ods.sheets if value == i.name][0]
 
 
+def GetSurplus():
+	value = ui.MsgBoxNumber("Kwota nadwyżki", "Wysokość nadwyżki podatku naliczonego nad należnym z poprzedniej deklaracji")
+	return value
+
+
 def SelectPeriod(sells, buys):
 	periods = collections.defaultdict(int)
 	for priod, items in itertools.chain(sells.items(), buys.items()):
@@ -203,6 +208,8 @@ def Main(argv=None):
 		ValidateTable(begin, end, sells)
 		ValidateTable(begin, end, buys)
 
+		surplus = Decimal(GetSurplus())
+
 		if ConfirmData(begin, end, sells, buys):
 
 			output = args.output or os.getcwd()
@@ -215,9 +222,9 @@ def Main(argv=None):
 
 			with open(filename, "w") as xml:
 				# TODO: dodać opcję wyboru złożenia dokumentu lub korekty - version
-				tax = jpk_vat.Write(xml, args.nip, args.firstname, args.lastname, args.birth, args.email, args.type == "VAT7K", args.departmentcode, begin, end, sells, buys, version=0)
+				tax, tax_next_month = jpk_vat.Write(xml, args.nip, args.firstname, args.lastname, args.birth, args.email, args.type == "VAT7K", args.departmentcode, begin, end, sells, buys, surplus=surplus, version=0)
 
-			ui.MsgBoxInfo("Sukces!", "Podatek do zapłacenia {}zł\n Utworzyony plik to:\n{}".format(tax, os.path.abspath(filename)))
+			ui.MsgBoxInfo("Sukces!", "Podatek do zapłacenia {}zł\n Kwota przeniesienia na następny okres rozliczeniowy {}zł\n Utworzyony plik to:\n{}".format(tax, tax_next_month, os.path.abspath(filename)))
 		return 0
 
 	except ValueError as ex:
