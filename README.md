@@ -39,7 +39,7 @@ ln -s /usr/lib64/python3.6/site-packages/PySide/ ~/.virtualenvs/jpk_vat/lib/pyth
 # Aktywacja środowiska
 . ~/.virtualenvs/jpk_vat/bin/activate
 # Uruchomienie
-sheet2jpk_vat --path ~/katalog_z_arkuszami --nip 0000000000 --name "Pełna nazwa firmy" --email "ksiegowa@example.com"
+sheet2jpk_vat --path ~/katalog_z_arkuszami --nip 0000000000 --firstname "Imię" --lastname "Nazwisko" --birth '1999-01-30' --email "ksiegowa@example.com" --type VAT7 --departmentcode 2407
 ```
 
 1. Skrypt w pierwszym kroku poprosi o wybranie pliku z podanego katalogu:
