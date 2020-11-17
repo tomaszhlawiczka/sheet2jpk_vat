@@ -2,12 +2,17 @@
 
 import collections
 import datetime
-from decimal import Decimal
+from decimal import Decimal, ROUND_HALF_UP
 from stdnum.pl import nip
 from stdnum.eu import vat
 
-Dec2Str = '{:.02f}'.format
-Dec2Vat = '{:.00f}'.format
+
+def Dec2Str(value):
+	return str(Decimal(value).quantize(Decimal('1.00'), rounding=ROUND_HALF_UP))
+
+
+def Dec2Vat(value):
+	return str(Decimal(value).quantize(Decimal('1'), rounding=ROUND_HALF_UP))
 
 
 class InvoiceInfo:
