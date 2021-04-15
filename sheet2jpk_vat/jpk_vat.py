@@ -176,6 +176,7 @@ def Write(fo, nip_number, firsname, lastname, birth, email, is_quarterly, depart
 				xml.tns__P_48(Dec2Vat(value_P_48))
 				xml.tns__P_51(Dec2Vat(value_P_51))
 				if value_P_62 > 0:
+					xml.tns__P_53(Dec2Vat(value_P_62))
 					xml.tns__P_62(Dec2Vat(value_P_62))
 
 			xml.tns__Pouczenia("1")
