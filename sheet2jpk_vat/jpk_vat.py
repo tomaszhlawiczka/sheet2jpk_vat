@@ -15,8 +15,8 @@ def Write(fo, nip_number, firsname, lastname, birth, email, is_quarterly, depart
 	<?xml version="1.0" encoding="UTF-8"?>
 	<tns:JPK xmlns:etd="http://crd.gov.pl/xml/schematy/dziedzinowe/mf/2016/01/25/eD/DefinicjeTypy/" xmlns:tns="http://jpk.mf.gov.pl/wzor/2017/11/13/1113/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 			<tns:Naglowek>
-					<tns:KodFormularza kodSystemowy="JPK_V7K (1)" wersjaSchemy="1-2E">JPK_VAT</tns:KodFormularza>
-					<tns:WariantFormularza>1</tns:WariantFormularza>
+					<tns:KodFormularza kodSystemowy="JPK_V7K (2)" wersjaSchemy="1-0E">JPK_VAT</tns:KodFormularza>
+					<tns:WariantFormularza>2</tns:WariantFormularza>
 					<tns:DataWytworzeniaJPK>2021-01-01T00:00:00Z</tns:DataWytworzeniaJPK>
 					<tns:NazwaSystemu>a</tns:NazwaSystemu>
 					<tns:CelZlozenia poz="P_7">1</tns:CelZlozenia>
@@ -67,12 +67,12 @@ def Write(fo, nip_number, firsname, lastname, birth, email, is_quarterly, depart
 
 	xml = xmlwitch.Builder(version='1.0', encoding='utf-8', indent='')
 	with xml.tns__JPK(
-			xmlns__etd="http://crd.gov.pl/xml/schematy/dziedzinowe/mf/2020/03/11/eD/DefinicjeTypy/",
-			xmlns__tns="http://crd.gov.pl/wzor/2020/05/08/9393/",
+			xmlns__etd="http://crd.gov.pl/xml/schematy/dziedzinowe/mf/2021/06/08/eD/DefinicjeTypy/",
+			xmlns__tns="http://crd.gov.pl/wzor/2021/12/27/11148/",
 			xmlns__xsi="http://www.w3.org/2001/XMLSchema-instance"):
 		with xml.tns__Naglowek():
-			xml.tns__KodFormularza('JPK_VAT', kodSystemowy="JPK_V7K (1)" if is_quarterly else "JPK_V7M (1)", wersjaSchemy="1-2E")
-			xml.tns__WariantFormularza(str(1))
+			xml.tns__KodFormularza('JPK_VAT', kodSystemowy="JPK_V7K (2)" if is_quarterly else "JPK_V7M (2)", wersjaSchemy="1-0E")
+			xml.tns__WariantFormularza(str(2))
 			xml.tns__DataWytworzeniaJPK(datetime.datetime.now().isoformat(timespec='seconds'))
 			xml.tns__NazwaSystemu(sysname)
 			xml.tns__CelZlozenia(str(1), poz="P_7")
@@ -92,11 +92,11 @@ def Write(fo, nip_number, firsname, lastname, birth, email, is_quarterly, depart
 		with xml.tns__Deklaracja():
 			with xml.tns__Naglowek():
 				xml.tns__KodFormularzaDekl('VAT-7K' if is_quarterly else "VAT-7",
-										   kodSystemowy="VAT-7K (15)" if is_quarterly else "VAT-7 (21)",
+										   kodSystemowy="VAT-7K (15)" if is_quarterly else "VAT-7 (22)",
 										   kodPodatku="VAT",
 										   rodzajZobowiazania="Z",
-										   wersjaSchemy="1-2E")
-				xml.tns__WariantFormularzaDekl("15" if is_quarterly else "21")
+										   wersjaSchemy="1-0E")
+				xml.tns__WariantFormularzaDekl("15" if is_quarterly else "22")
 				if is_quarterly:
 					xml.tns__Kwartal(str(int(begin.month / 4)))
 
